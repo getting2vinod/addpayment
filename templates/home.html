@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Payment Update</title>
+</head>
+<body>
+    <script type="text/javascript">
+/*
+        function setValuepayrowid(v,m) {
+            document.getElementById('payrowid').value = v;
+            document.getElementById('payrowmobile').value = m;
+        }
+        function setValuedelrowid(v,m) {
+            document.getElementById('delrowid').value = v;
+            document.getElementById('delrowmobile').value = m;
+            if(confirm("About to cancel booking. Proceed?")){
+                document.getElementById("delrow").submit();
+            }
+        }
+
+        function setValueconfirmrowid(v,m) {
+            document.getElementById('confirmrowid').value = v;
+            document.getElementById('confirmrowmobile').value = m;
+            if(confirm("Confirming booking. Proceed?")){
+                document.getElementById("confirmrow").submit();
+            }
+        }
+     */
+    
+    </script>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-8">
+            <h1 class="mt-5">Add Payment to Sheet - Ref {{nextpayref}}</h1>
+            <form method="POST" class="mt-3" action="/addpayment" >
+                <input type="hidden" readonly class="form-control" id="payref" name="payref" value="{{nextpayref}}" >
+                <div class="form-group">
+                    <label for="Mobile">Date</label>
+                    <input type="date" class="form-control" id="paydate" name="paydate" value="{{paydate}}" required>
+                </div>
+                <div class="form-group">
+                    <label for="payby">Paid By</label>
+                    <select class="form-control" id="payby" name="payby" required>
+                        <option value="Vinod" selected>Vinod</option>
+                        <option value="Vimal">Vimal</option>
+                        <option value="Kurup">Kurup</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="paybank">Bank</label>
+                    <select class="form-control" id="paybank" name="paybank">
+                        <option value="" selected></option>
+                        <option value="BoB">BOB</option>
+                        <option value="hdfc">HDFC</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="payto">Paid To</label>
+                    <input type="text" class="form-control" id="payto" name="payto" required>
+                </div>
+                <div class="form-check">
+                    <div class="">
+                    <input class="form-check-input" type="checkbox" name="payoutofcontract" id="payoutofcontract"/>
+                    <label class="form-check-label" for="payoutofcontract"> Out of Contract </label>
+                    </div>
+                    
+                </div>
+                <div class="form-group">
+                    <label for="paytowards">Towards</label>
+                    <input type="text" class="form-control" id="paytowards" name="paytowards" required>
+                </div> 
+                <div class="form-group">
+                    <label for="paydetails">Pay Details</label>
+                    <input type="text" class="form-control" id="paydetails" name="paydetails">
+                </div> 
+                <div class="form-group">
+                    <label for="paymethod">Paid Through</label>
+                    <select multiple class="form-control" id="paymethod" name="paymethod" required>
+                        <option value="Phe" selected>Phone Pe</option>
+                        <option value="GPay">GPay</option>
+                        <option value="NEFT">Neft</option>
+                        <option value="Ptm">PayTM</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+                
+                <div class="form-check">                   
+                    <div class="">
+                    <input class="form-check-input" type="checkbox" name="payasexpense" id="payasexpense"/>
+                    <label class="form-check-label" for="payasexpense"> Paid as Expense </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="payamount">Amount</label>
+                    <input type="number"  class="form-control" id="payamount" name="payamount" required>
+                </div>
+                <div class="form-group">
+                    <label for="payspecialnotes">Special Notes:</label>
+                    <input type="text"  class="form-control" id="payspecialnotes" name="payspecialnotes">
+                </div>           
+                <button type="submit" class="btn btn-primary">Submit</button>
+            </form>
+            </div>            
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
