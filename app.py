@@ -11,7 +11,7 @@ app.secret_key = "thisismyveryloooongsecretkey"
 
 # Initialize Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SERVICE_ACCOUNT_FILE = 'myutils-437714-bd0d0a3e77bd.json'  # Update this path
+SERVICE_ACCOUNT_FILE = '/json/myutils-437714-bd0d0a3e77bd.json'  # Update this path
 creds = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
@@ -148,7 +148,7 @@ def addpayment():
                 payoc = ''
             fforEba = '=INDIRECT(address(row()-1,column())) + (INDIRECT(address(row(),column()-2)) - INDIRECT(address(row(),column()-1)))'
             fforCheck = '=INDIRECT(address(row()-1,column()))'
-            valuespay = [[paydate, payby, payto, paytowards, paymethod,payref,payamount,payoc,fforEba,fforCheck,payspecialnotes]]  
+            valuespay = [[paydate, payby, payto, paytowards, paymethod,payref,payamount,payoc,fforEba,'',payspecialnotes]]  
             body = {
                 'values': valuespay
             }
@@ -170,7 +170,7 @@ def addpayment():
     #status_val = '=if(INDIRECT(ADDRESS(row(),column()+1))="","Pay Now",if(INDIRECT(ADDRESS(row(),column()+3)),"Confirmed","Approval Pending"))'
    
 
-    return render_template('home.html', summary=summary)
+    return render_template('index.html', summary=summary)
 
 @app.route('/confirm', methods=['POST'])
 def update_confirm():
@@ -229,5 +229,5 @@ def update_payment():
     return redirect('/list')
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5000)
-    #serve(app, host='0.0.0.0', port=5000)
+    #app.run(debug=True, host="0.0.0.0", port=5000)
+    serve(app, host='0.0.0.0', port=5000)
