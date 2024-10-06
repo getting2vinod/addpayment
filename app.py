@@ -105,58 +105,64 @@ def delete():
 
 @app.route('/addpayment', methods=['POST'])
 def addpayment():
-    payref = request.form['payref']
-    paydate = request.form['paydate']
-    payby = request.form['payby']
-    paybank = request.form['paybank']
-    payto = request.form['payto']
-    payoutofcontract = request.form.getlist('payoutofcontract')
-    paytowards = request.form['paytowards']
-    paymethod = request.form['paymethod']
-    payasexpense = request.form.getlist('payasexpense')
-    payamount = request.form['payamount']
-    payspecialnotes = request.form['payspecialnotes']
-    paydetails = request.form['paydetails']
-    
-    service = build('sheets', 'v4', credentials=creds)
+    try:
+        payref = request.form['payref']
+        paydate = request.form['paydate']
+        payby = request.form['payby']
+        paybank = request.form['paybank']
+        payto = request.form['payto']
+        payoutofcontract = request.form.getlist('payoutofcontract')
+        paytowards = request.form['paytowards']
+        paymethod = request.form['paymethod']
+        payasexpense = request.form.getlist('payasexpense')
+        payamount = request.form['payamount']
+        payspecialnotes = request.form['payspecialnotes']
+        paydetails = request.form['paydetails']
+        
+        service = build('sheets', 'v4', credentials=creds)
 
-    paydate = (datetime.datetime.strptime(paydate,("%Y-%m-%d"))).strftime("%d/%m/%Y")
-    #saving into expense
-    #=if(or(mid(G139,1,5)="Mom",mid(G139,1,5)="Dad"),"Kurup",mid(G139,1,5))
-    fforbyref= '=if(or(mid(INDIRECT(ADDRESS(row(),column()-1)),1,5)="Mom",mid(INDIRECT(ADDRESS(row(),column()-1)),1,5)="Dad"),"Kurup",mid(INDIRECT(ADDRESS(row(),column()-1)),1,5))'
-    fforsum = '=INDIRECT(ADDRESS(row(),column()-2)) + INDIRECT(ADDRESS(row()-1,column()))'
-    values = [[payref, paytowards, paydetails, payto, paydate, paymethod,payby+' - '+paybank,fforbyref,payamount,'',fforsum,'',payspecialnotes]]  
-    
-    print(values)
-    body = {
-        'values': values
-    }
-    service.spreadsheets().values().append(
-        spreadsheetId=Expense_SHEET_ID,
-        range=Expense_RANGE_NAME,
-        valueInputOption='USER_ENTERED',
-        body=body
-    ).execute()
-
-
-    if('on' in payasexpense) == False:
-        if('on' in payoutofcontract):
-            payoc = payamount
-            payamount=''
-        else:
-            payoc = ''
-        fforEba = '=INDIRECT(address(row()-1,column())) + (INDIRECT(address(row(),column()-2)) - INDIRECT(address(row(),column()-1)))'
-        fforCheck = '=INDIRECT(address(row()-1,column()))'
-        valuespay = [[paydate, payby, payto, paytowards, paymethod,payref,payamount,payoc,fforEba,fforCheck,payspecialnotes]]  
+        paydate = (datetime.datetime.strptime(paydate,("%Y-%m-%d"))).strftime("%d/%m/%Y")
+        #saving into expense
+        #=if(or(mid(G139,1,5)="Mom",mid(G139,1,5)="Dad"),"Kurup",mid(G139,1,5))
+        fforbyref= '=if(or(mid(INDIRECT(ADDRESS(row(),column()-1)),1,5)="Mom",mid(INDIRECT(ADDRESS(row(),column()-1)),1,5)="Dad"),"Kurup",mid(INDIRECT(ADDRESS(row(),column()-1)),1,5))'
+        fforsum = '=INDIRECT(ADDRESS(row(),column()-2)) + INDIRECT(ADDRESS(row()-1,column()))'
+        values = [[payref, paytowards, paydetails, payto, paydate, paymethod,payby+' - '+paybank,fforbyref,payamount,'',fforsum,'',payspecialnotes]]  
+        
+        print(values)
         body = {
-            'values': valuespay
+            'values': values
         }
         service.spreadsheets().values().append(
-            spreadsheetId=Payment_SHEET_ID,
-            range=Payment_RANGE_NAME,
+            spreadsheetId=Expense_SHEET_ID,
+            range=Expense_RANGE_NAME,
             valueInputOption='USER_ENTERED',
             body=body
         ).execute()
+
+
+        if('on' in payasexpense) == False:
+            if('on' in payoutofcontract):
+                payoc = payamount
+                payamount=''
+            else:
+                payoc = ''
+            fforEba = '=INDIRECT(address(row()-1,column())) + (INDIRECT(address(row(),column()-2)) - INDIRECT(address(row(),column()-1)))'
+            fforCheck = '=INDIRECT(address(row()-1,column()))'
+            valuespay = [[paydate, payby, payto, paytowards, paymethod,payref,payamount,payoc,fforEba,fforCheck,payspecialnotes]]  
+            body = {
+                'values': valuespay
+            }
+            service.spreadsheets().values().append(
+                spreadsheetId=Payment_SHEET_ID,
+                range=Payment_RANGE_NAME,
+                valueInputOption='USER_ENTERED',
+                body=body
+            ).execute()
+        summary = "Saved successfully !!!"
+    except Exception as err:
+        summary = f"Failed {err}"
+
+
         #save into payment as well
         
 
@@ -164,7 +170,7 @@ def addpayment():
     #status_val = '=if(INDIRECT(ADDRESS(row(),column()+1))="","Pay Now",if(INDIRECT(ADDRESS(row(),column()+3)),"Confirmed","Approval Pending"))'
    
 
-    return redirect('/saved')
+    return render_template('home.html', summary=summary)
 
 @app.route('/confirm', methods=['POST'])
 def update_confirm():
