@@ -11,7 +11,7 @@ app.secret_key = "thisismyveryloooongsecretkey"
 
 # Initialize Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SERVICE_ACCOUNT_FILE = '/json/myutils-437714-bd0d0a3e77bd.json'  # Update this path
+SERVICE_ACCOUNT_FILE = 'myutils-437714-bd0d0a3e77bd.json'  # Update this path
 creds = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
@@ -24,8 +24,9 @@ Expense_RANGE_NAME = 'Expense Tracker!A2:O'
 @app.route('/')
 def index():
     session.clear()
-    lastref=int(getlastref())+1
-    return render_template('home.html',paydate=datetime.datetime.now().strftime("%Y-%m-%d"),nextpayref=lastref)
+    lastref = getlastref()
+    lastrefnum=int(lastref[0])+1
+    return render_template('home.html',paydate=datetime.datetime.now().strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8])
 
 @app.route('/favicon.ico')
 def favicon():
@@ -53,7 +54,7 @@ def getlastref():
 
     values.sort(key=lambda x: int(x[0]))
     
-    return values[len(values)-1][0]
+    return values[len(values)-1]
 
 
 @app.route('/saved', methods=['GET'])
