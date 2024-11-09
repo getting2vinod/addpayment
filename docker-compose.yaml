@@ -1,0 +1,35 @@
+version: '3'
+services:
+  nginx:
+    image: nginx:1.0
+    ports:
+      - "82:80"
+    depends_on:
+      - mypayments
+    networks:
+      - app-network
+
+  mypayments:
+    image: getting2vinod/addpayment:1.1
+    container_name: mypayments
+    hostname: mypayments    
+    networks:
+      - app-network
+    volumes:
+      - ./json:/json
+    entrypoint: "python /app/app.py"
+
+  bookmyjam:
+    image: getting2vinod/bookmyjam:1.0
+    container_name: bookmyjam
+    hostname: bookmyjam    
+    networks:
+      - app-network
+    volumes:
+      - ./json:/json
+    entrypoint: "python /app/app.py"
+
+networks:
+  app-network:
+    driver: bridge
+    
