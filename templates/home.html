@@ -35,7 +35,7 @@
         <div class="row g-3">
             <div class="col-8 col-sm-12">
             <h5 class="mt-5">Add Payment to Sheet - Ref {{nextpayref}} </h5> (Last: {{summary}})
-            <form method="POST" class="mt-3" action="/addpayment" >
+            <form method="POST" class="mt-3" action="{{route}}/addpayment" >
                 <input type="hidden" readonly class="form-control" id="payref" name="payref" value="{{nextpayref}}" >
                 <div class="form-group">
                     <label for="Mobile">Date</label>

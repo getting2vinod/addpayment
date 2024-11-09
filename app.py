@@ -5,6 +5,10 @@ import os
 import datetime
 from waitress import serve
 
+route_prefix = os.getenv('APP_ROUTE') or ""
+
+if(route_prefix != ""):
+    route_prefix = "/" + route_prefix
 
 app = Flask(__name__)
 app.secret_key = "thisismyveryloooongsecretkey"
@@ -21,14 +25,14 @@ Expense_SHEET_ID = '1x2FR_PMfwHM2V5gHu15DsgXHFcqLlXSbRarKyQwcNms'
 Payment_RANGE_NAME = 'Accounting!A2:K'  # Adjust range as needed
 Expense_RANGE_NAME = 'Expense Tracker!A2:O' 
 
-@app.route('/')
+@app.route(route_prefix +'/')
 def index():
     session.clear()
     lastref = getlastref()
     lastrefnum=int(lastref[0])+1
-    return render_template('home.html',paydate=datetime.datetime.now().strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8])
+    return render_template('home.html',route=route_prefix, paydate=datetime.datetime.now().strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8])
 
-@app.route('/favicon.ico')
+@app.route(route_prefix +'/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static/images'),
                                'favicon.png', mimetype='image/vnd.microsoft.icon')
@@ -57,11 +61,11 @@ def getlastref():
     return values[len(values)-1]
 
 
-@app.route('/saved', methods=['GET'])
+@app.route(route_prefix +'/saved', methods=['GET'])
 def saved():
-    return render_template('index.html')
+    return render_template('index.html',route=route_prefix)
 
-@app.route('/auth', methods=['POST'])
+@app.route(route_prefix +'/auth', methods=['POST'])
 def auth():
     session.clear()
     name_to_filter = request.form['mobile']
@@ -74,14 +78,14 @@ def auth():
        if filtered_values and passkey == filtered_values[0][1]:
            session["isadmin"] = True
     session["name_to_filter"] = name_to_filter
-    return redirect('/list')
+    return redirect(route_prefix +'/list')
 
 # @app.route('/list', methods=['GET'])
 # def new_and_list():
 #     filtered_values = build_list(name_to_filter=session['name_to_filter'])    
 #     return render_template('home.html', filtered_values=filtered_values, mobile=session['name_to_filter'], is_admin=session.get('isadmin'))
 
-@app.route('/delete', methods=['POST'])
+@app.route(route_prefix +'/delete', methods=['POST'])
 def delete():
     row = request.form['delrowid']
     column = "G" #will be fixed for row
@@ -104,7 +108,7 @@ def delete():
 
     return redirect('/list')
 
-@app.route('/addpayment', methods=['POST'])
+@app.route(route_prefix +'/addpayment', methods=['POST'])
 def addpayment():
     try:
         payref = request.form['payref']
@@ -171,9 +175,9 @@ def addpayment():
     #status_val = '=if(INDIRECT(ADDRESS(row(),column()+1))="","Pay Now",if(INDIRECT(ADDRESS(row(),column()+3)),"Confirmed","Approval Pending"))'
    
 
-    return render_template('index.html', summary=summary)
+    return render_template('index.html', summary=summary,route=route_prefix)
 
-@app.route('/confirm', methods=['POST'])
+@app.route(route_prefix +'/confirm', methods=['POST'])
 def update_confirm():
     row = request.form['confirmrowid']     
     columnApproval = "J" #will be fixed for row for approval checkbox
@@ -191,9 +195,9 @@ def update_confirm():
         valueInputOption='RAW',
         body=bodyApproval
     ).execute()
-    return redirect('/list')
+    return redirect(route_prefix +'/list')
     
-@app.route('/paymentconfirm', methods=['POST'])
+@app.route(route_prefix +'/paymentconfirm', methods=['POST'])
 def update_payment():
     row = request.form['payrowid']
     column = "H" #will be fixed for row
@@ -227,7 +231,7 @@ def update_payment():
         body=bodyApproval
     ).execute()
 
-    return redirect('/list')
+    return redirect(route_prefix +'/list')
 
 if __name__ == '__main__':
     #app.run(debug=True, host="0.0.0.0", port=5000)

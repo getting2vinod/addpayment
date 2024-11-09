@@ -15,6 +15,8 @@ services:
     hostname: mypayments    
     networks:
       - app-network
+    environment:
+     - APP_ROUTE=pay
     volumes:
       - ./json:/json
     entrypoint: "python /app/app.py"
@@ -27,6 +29,8 @@ services:
       - app-network
     volumes:
       - ./json:/json
+    environment:
+     - APP_ROUTE=jam
     entrypoint: "python /app/app.py"
 
 networks:
