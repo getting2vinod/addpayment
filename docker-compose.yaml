@@ -32,6 +32,18 @@ services:
     environment:
      - APP_ROUTE=jam
     entrypoint: "python /app/app.py"
+  
+  pdfviewer:
+    image: pdfviewerimage:latest
+    container_name: pdfviewer
+    hostname: pdfviewer    
+    networks:
+      - app-network
+    environment:
+     - APP_ROUTE=pdf
+    volumes:
+      - - ./:/app
+    entrypoint: "python app.py"
 
 networks:
   app-network:
