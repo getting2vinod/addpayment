@@ -2,6 +2,7 @@ FROM python:3
 RUN pip install waitress
 RUN pip install flask
 RUN pip install google-api-python-client  
+RUN pip install pytz
 RUN mkdir -p /app 
 COPY ./ /app
 WORKDIR /app
