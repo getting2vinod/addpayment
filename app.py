@@ -4,6 +4,8 @@ from googleapiclient.discovery import build
 import os
 import datetime
 from waitress import serve
+import pytz    
+tz_IN = pytz.timezone('Asia/Kolkata')  
 
 route_prefix = os.getenv('APP_ROUTE') or ""
 
@@ -30,7 +32,7 @@ def index():
     session.clear()
     lastref = getlastref()
     lastrefnum=int(lastref[0])+1
-    return render_template('home.html',route=route_prefix, paydate=datetime.datetime.now().strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8])
+    return render_template('home.html',route=route_prefix, paydate=datetime.datetime.now(tz_IN).strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8])
 
 @app.route('/favicon.ico')
 def favicon():
