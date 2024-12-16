@@ -4,7 +4,9 @@ from googleapiclient.discovery import build
 import os
 import datetime
 from waitress import serve
-import pytz    
+import pytz
+from auth import check_login, init, auth
+
 tz_IN = pytz.timezone('Asia/Kolkata')  
 
 route_prefix = os.getenv('APP_ROUTE') or ""
@@ -15,9 +17,11 @@ if(route_prefix != ""):
 app = Flask(__name__)
 app.secret_key = "thisismyveryloooongsecretkey"
 
+app.register_blueprint(auth)
+
 # Initialize Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SERVICE_ACCOUNT_FILE = '/json/myutils-437714-bd0d0a3e77bd.json'  # Update this path
+SERVICE_ACCOUNT_FILE = './json/myutils-437714-bd0d0a3e77bd.json'  # Update this path
 creds = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
@@ -26,6 +30,8 @@ Expense_SHEET_ID = '1x2FR_PMfwHM2V5gHu15DsgXHFcqLlXSbRarKyQwcNms'
 
 Payment_RANGE_NAME = 'Accounting!A2:K'  # Adjust range as needed
 Expense_RANGE_NAME = 'Expense Tracker!A2:O' 
+
+init(SCOPES,SERVICE_ACCOUNT_FILE,["/login"],app)
 
 @app.route('/')
 def index():
