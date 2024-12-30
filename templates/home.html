@@ -29,7 +29,10 @@
             }
         }
      */
-    
+    function disableButton(btn){
+        btn.disabled = true;
+        return false
+    }
     </script>
     <div class="container">
         <div class="row g-3">
@@ -55,6 +58,8 @@
                         <option value="" selected></option>
                         <option value="BoB">BOB</option>
                         <option value="hdfc">HDFC</option>
+                        <option value="hdfc">SBI</option>
+                        <option value="hdfc">UCO</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -102,7 +107,7 @@
                     <label for="payspecialnotes">Special Notes:</label>
                     <input type="text"  class="form-control" id="payspecialnotes" name="payspecialnotes" placeholder="Any special Notes">
                 </div>           
-                <button type="submit" class="btn btn-primary">Submit</button>
+                <button type="submit" class="btn btn-primary" onsubmit="disableButton(this);">Submit</button>
             </form>
             </div>            
         </div>

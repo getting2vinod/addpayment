@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template, redirect, url_for, session, send_from_directory
+from flask import Flask, request, render_template, redirect, url_for, send_from_directory
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
 import datetime
 from waitress import serve
-import pytz    
+import pytz
+from authapi import check_login, init, auth
+
 tz_IN = pytz.timezone('Asia/Kolkata')  
 
 route_prefix = os.getenv('APP_ROUTE') or ""
@@ -15,9 +17,13 @@ if(route_prefix != ""):
 app = Flask(__name__)
 app.secret_key = "thisismyveryloooongsecretkey"
 
+
+app.register_blueprint(auth)
+
+
 # Initialize Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
-SERVICE_ACCOUNT_FILE = '/json/myutils-437714-bd0d0a3e77bd.json'  # Update this path
+SERVICE_ACCOUNT_FILE = './json/myutils-437714-bd0d0a3e77bd.json'  # Update this path
 creds = service_account.Credentials.from_service_account_file(
     SERVICE_ACCOUNT_FILE, scopes=SCOPES)
 
@@ -27,9 +33,10 @@ Expense_SHEET_ID = '1x2FR_PMfwHM2V5gHu15DsgXHFcqLlXSbRarKyQwcNms'
 Payment_RANGE_NAME = 'Accounting!A2:K'  # Adjust range as needed
 Expense_RANGE_NAME = 'Expense Tracker!A2:O' 
 
+init(app)
+
 @app.route('/')
-def index():
-    session.clear()
+def index():    
     lastref = getlastref()
     lastrefnum=int(lastref[0])+1
     return render_template('home.html',route=route_prefix, paydate=datetime.datetime.now(tz_IN).strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8])
@@ -66,21 +73,6 @@ def getlastref():
 @app.route('/saved', methods=['GET'])
 def saved():
     return render_template('index.html',route=route_prefix)
-
-@app.route('/auth', methods=['POST'])
-def auth():
-    session.clear()
-    name_to_filter = request.form['mobile']
-    passkey = request.form.get("passkey")
-    service = build('sheets', 'v4', credentials=creds)
-    if(passkey):       
-       result = service.spreadsheets().values().get(spreadsheetId=SHEET_ID, range=ADMIN_RANGE_NAME).execute()
-       values = result.get('values', [])
-       filtered_values = [row for row in values if row and row[0] == name_to_filter]
-       if filtered_values and passkey == filtered_values[0][1]:
-           session["isadmin"] = True
-    session["name_to_filter"] = name_to_filter
-    return redirect('/list')
 
 # @app.route('/list', methods=['GET'])
 # def new_and_list():
@@ -236,5 +228,5 @@ def update_payment():
     return redirect('/list')
 
 if __name__ == '__main__':
-    #app.run(debug=True, host="0.0.0.0", port=5000)
+    #app.run(debug=False, host="0.0.0.0", port=5000)
     serve(app, host='0.0.0.0', port=5000)
