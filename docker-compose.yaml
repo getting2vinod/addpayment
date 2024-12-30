@@ -1,18 +1,21 @@
 version: '3'
 services:
   nginx:
-    image: nginx:1.27
+    image: nginx:1.1
+    container_name: nginx
     ports:
       - "80:80"
+      - "443:443"
     depends_on:
       - mypayments
+      - bookmyjam
     networks:
       - net
 
   mypayments:
     image: getting2vinod/addpayment:1.1
     container_name: mypayments
-    hostname: pay.myapp.localhost    
+    hostname: mypayments
     networks:
       - net
     environment:
@@ -25,29 +28,27 @@ services:
   bookmyjam:
     image: getting2vinod/bookmyjam:1.0
     container_name: bookmyjam
-    hostname: bookmyjam    
+    hostname: bookmyjam
     networks:
       - net
     volumes:
-      - ./json:/json
+      - ../bookmyjam/json:/json
     environment:
      - APP_ROUTE=jam
     entrypoint: "python /app/app.py"
-  
+
   pdfviewer:
     image: pdfviewerimage:latest
     container_name: pdfviewer
-    hostname: pdfviewer    
+    hostname: pdfviewer
     networks:
       - net
     environment:
      - APP_ROUTE=pdf
     volumes:
-      - ./:/app
+      -  ../pdfviewer:/app
     entrypoint: "python app.py"
 
 networks:
-  net:
+  app-network:
     driver: bridge
-    external: true
-    
