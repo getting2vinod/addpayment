@@ -7,14 +7,24 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_session import Session
 import json
 import urllib
+import logging
 
-config_file = "./auth.config"
+config_file = "./config/auth.config"
 config = None
-
+auth_server = ""
 auth = Blueprint('auth', __name__)
 
 db = SQLAlchemy()
 
+auth_route_prefix = os.getenv('AUTH_ROUTE') or ""
+
+if(auth_route_prefix != ""):
+    auth_route_prefix = "/" + auth_route_prefix
+
+route_prefix = os.getenv('APP_ROUTE') or ""
+
+if(route_prefix != ""):
+    route_prefix = "/" + route_prefix
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 sessionKey = "authapi@#SessionKeeeeey"
@@ -22,14 +32,24 @@ tokenName = "auth-x-token"
 userName = "auth-x-username"
 privateKey = "this@@@ismy$$$superlong!!sessionKeyabcdef"
 server_session = None
+
+logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+
+config_env = os.getenv('CONFIG_ENV') or "auth-dev"
+
 with open(config_file) as json_file:
     config = json.load(json_file)
     
 def init(app):
     app.before_request(check_login)
    
-    
-    
+auth_server_hostname = os.getenv('AUTH_SERVER') or auth_server
+
+if(auth_server_hostname != ""):
+    auth_server_hostname = "/" + auth_server_hostname
+
+def username():
+    return session.get("username")
 
 @auth.record_once
 def on_load(state):
@@ -71,24 +91,31 @@ def sessioncheck():
 
 
 def check_login():
-    if(request.path not in config["auth"]["ignoredRoutes"]):
+    if(request.path not in config["ignoredRoutes"]):
         if config:        
-            url = "http://" + config["auth"]["serverurl"]+ ":" + str(config["auth"]["port"]) 
+            url_i = config[config_env]["authServerApi"]     
+            url_e = config[config_env]["authServerLink"]  
+            url_app = config[config_env]["appLink"]   
             if session.get(tokenName):
-                    resp = requests.get(url+ "/validate/"+session.get(tokenName))
+                    logging.debug("Validating : %s", session.get(tokenName))
+                    resp = requests.get(url_i+ "/validate/"+session.get(tokenName))
                     rp = resp.json()
                     if rp["success"]:
+                        session["username"]=rp["username"]                        
                         return None
                     else:
-                        session["_source"] = urllib.parse.quote(request.url)       
-                        signonUrl = url + "/signon?callback=" + urllib.parse.quote(request.base_url + "/callback")
+                        
+                        session["_source"] = urllib.parse.quote((request.url + route_prefix))       
+                        signonUrl = url_e +  "/signon?callback=" + urllib.parse.quote(url_app + "/callback")
                         #send callback url and _source
+                        logging.debug("Validation failed. Redirecting to : %s", signonUrl)
                         return redirect(signonUrl)
                 
             else: # no token found to sign in
-                session["_source"] = urllib.parse.quote(request.url)       
-                signonUrl = url + "/signon?callback=" + urllib.parse.quote(request.base_url + "/callback")
+                session["_source"] = urllib.parse.quote((request.url + route_prefix))       
+                signonUrl =url_e +  "/signon?callback=" + urllib.parse.quote(url_app + "/callback")
                 #send callback url and _source
+                logging.debug("No token found. Redirecting to : %s, source : %s.", signonUrl, session.get("_source"))
                 return redirect(signonUrl)
         else:
             return({'success':False})
@@ -97,22 +124,26 @@ def check_login():
 
 @auth.route("/logout", methods=['GET'])
 def logout():
-    session.clear()
-    url = "http://" + config["auth"]["serverurl"]+ ":" + str(config["auth"]["port"]) 
-    return redirect(url + "/logout")
+    session.clear()   
+    url = config[config_env]["authServerLink"] 
+    url_app = config[config_env]["appLink"] 
+    return redirect(url + "/logout?callback=" + urllib.parse.quote(url_app))
 
 @auth.route("/callback", methods=['GET'])
 def callback():
     #to receive username/token/expires
     singleuse = request.args.get("singleuse")
-    url = "http://" + config["auth"]["serverurl"]+ ":" + str(config["auth"]["port"]) 
+   # url = "http://" + config[config_env]["serverurl"]+ ":" + str(config[config_env]["port"]) 
+    url = config[config_env]["authServerApi"] 
+    logging.debug("Recvd single use : %s , url %s and session source %s", singleuse, url, session.get("_source"))
     if(singleuse):
         #pl = json.loads(payload)
         #use key to get token
         resp = requests.get(url+ "/gettokenfromkey/"+privateKey+"/"+singleuse)
         rp = resp.json()        
-        session[tokenName] = rp["token"]        
-        return redirect(unquote(session["_source"]))
+        session[tokenName] = rp["token"]       
+        logging.debug("Redirecting to %s : %s", unquote(session["_source"]), session.get(tokenName)) 
+        return redirect(unquote(session.get("_source")))
     else:
         return ("Invalid handshake or user not registered.")
 

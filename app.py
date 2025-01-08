@@ -1,15 +1,12 @@
-from flask import Flask, request, render_template, redirect, url_for, send_from_directory
+from flask import Flask, request, render_template, redirect, url_for, send_from_directory, g, current_app
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 import os
 import datetime
+import time
 from waitress import serve
 import pytz
-<<<<<<< HEAD
-from authapi import check_login, init, auth
-=======
-from auth import check_login, init, auth
->>>>>>> origin/main
+from authapi import check_login, init, auth, username
 
 tz_IN = pytz.timezone('Asia/Kolkata')  
 
@@ -18,18 +15,12 @@ route_prefix = os.getenv('APP_ROUTE') or ""
 if(route_prefix != ""):
     route_prefix = "/" + route_prefix
 
+
 app = Flask(__name__)
 app.secret_key = "thisismyveryloooongsecretkey"
-
-<<<<<<< HEAD
-
 app.register_blueprint(auth)
 
 
-=======
-app.register_blueprint(auth)
-
->>>>>>> origin/main
 # Initialize Google Sheets API
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 SERVICE_ACCOUNT_FILE = './json/myutils-437714-bd0d0a3e77bd.json'  # Update this path
@@ -42,22 +33,17 @@ Expense_SHEET_ID = '1x2FR_PMfwHM2V5gHu15DsgXHFcqLlXSbRarKyQwcNms'
 Payment_RANGE_NAME = 'Accounting!A2:K'  # Adjust range as needed
 Expense_RANGE_NAME = 'Expense Tracker!A2:O' 
 
-<<<<<<< HEAD
 init(app)
-=======
-init(SCOPES,SERVICE_ACCOUNT_FILE,["/login"],app)
->>>>>>> origin/main
 
 @app.route('/')
 def index():    
     lastref = getlastref()
     lastrefnum=int(lastref[0])+1
-    return render_template('home.html',route=route_prefix, paydate=datetime.datetime.now(tz_IN).strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8])
+    return render_template('home.html',route=route_prefix, paydate=datetime.datetime.now(tz_IN).strftime("%Y-%m-%d"),nextpayref=lastrefnum,summary=lastref[3] + " - " + lastref[4] + " - " + lastref[8],username=username())
 
 @app.route('/favicon.ico')
 def favicon():
-    return send_from_directory(os.path.join(app.root_path, 'static/images'),
-                               'favicon.png', mimetype='image/vnd.microsoft.icon')
+    return current_app.send_static_file("images/favicon.png")
 
 def getlastref():
     service = build('sheets', 'v4', credentials=creds)
@@ -114,6 +100,13 @@ def delete():
     ).execute()
 
     return redirect('/list')
+
+
+@app.route('/addpaymenttest', methods=['POST'])
+def addpaymenttest():
+    time.sleep(10)
+    return render_template('index.html', summary="this is a test",route=route_prefix)
+
 
 @app.route('/addpayment', methods=['POST'])
 def addpayment():
