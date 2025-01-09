@@ -13,6 +13,8 @@ services:
       - ./json:/json
       - ./config:/app/config
       - ./templates:/app/templates
+      - ./app.py:/app/app.py
+      - ./authapi.py:/app/authapi.py
     ports:
       - 5000:5000
 
